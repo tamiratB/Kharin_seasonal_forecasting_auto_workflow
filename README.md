@@ -189,6 +189,8 @@ The workflow automatically performs the following steps:
 9. Run calibration.
 10. Produce calibrated seasonal forecasts.
 
+You will find forecasts in `gcm_calibration/data/calibrated_forecasts_for_ICPAC`.
+
 ---
 
 # Notes
