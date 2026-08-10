@@ -70,9 +70,19 @@ source /home/btamirat/miniforge3/etc/profile.d/conda.sh
 ###############################################################################
 # one model per line and no need for comma in between
 MODELS=(
+    "CMCC-SPSv4"
+    "COLA-RSMAS-CCSM4"
+    "COLA-RSMAS-CESM1"
+    "CanSIPS-IC4.CanESM5"
+    "CanSIPS-IC4.GEM5p2-NEMO"
     "DWD-GCFS2p2"
     "ECMWF-SEAS51_iri2"
     "GFDL-SPEAR"
+    "JMA-CPS3"
+    "Meteo_France-System9"
+    "NASA-GEOSS2S"
+    "NCEP-CFSv2"
+    "UKMO-GloSea6-GC2-System604"
 )
 
 INIT_MONTH="May"
