@@ -136,7 +136,9 @@ Example:
 
 ```bash
 MODELS=(
+    "DWD-GCFS2p2"
     "ECMWF-SEAS51_iri2"
+    "GFDL-SPEAR"
 )
 
 INIT_MONTH="May"
@@ -209,8 +211,6 @@ If you use this workflow in your operational forecasting or research, please cit
 
 ---
 
-# Author
-
-**Tamirat B. Jimma**
+# Prepared
 
 IGAD Climate Prediction and Applications Centre (ICPAC)
