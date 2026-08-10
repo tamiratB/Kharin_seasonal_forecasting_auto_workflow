@@ -137,7 +137,7 @@ Example:
 ```bash
 MODELS=(
     "DWD-GCFS2p2"
-    "ECMWF-SEAS51_iri2"
+    "ECMWF-SEAS51"
     "GFDL-SPEAR"
 )
 
