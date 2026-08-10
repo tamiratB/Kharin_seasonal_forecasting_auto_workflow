@@ -195,6 +195,8 @@ You will find forecasts in `gcm_calibration/data/calibrated_forecasts_for_ICPAC`
 
 # Notes
 
+- Check the log files in the respective folders for any errors or warnings. If a model was not processed, determine whether it was due to a failed data download or any other issue. The log files are located in the `logs` directories of both `gcm_preprocessor` and `gcm_calibration`.
+
 - Hindcast downloading is optional. Once the hindcast datasets have been downloaded, set
 
 ```bash
