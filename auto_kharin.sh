@@ -181,11 +181,11 @@ if [[ "${INDIVIDUAL_MODEL_FORECAST}" == "True" ]]; then
 
     done
 
+else
+
 ###############################################################################
 # Multi-model Ensemble Forecast
 ###############################################################################
-
-else
 
     if [[ ${#MODELS[@]} -eq 0 ]]; then
         echo "No models specified."
