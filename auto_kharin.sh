@@ -80,19 +80,11 @@
 
 set -euo pipefail
 
-###############################################################################
-# Environment
-###############################################################################
-
 WORKDIR="/home/btamirat/oper"
 
 cd "${WORKDIR}"
 
 source /home/btamirat/miniforge3/etc/profile.d/conda.sh
-
-###############################################################################
-# User Configuration
-###############################################################################
 
 MODELS=(
     "CMCC-SPSv4"
@@ -122,9 +114,7 @@ END_YEAR=2016
 DOWNLOAD_HINDCAST="False"
 INDIVIDUAL_MODEL_FORECAST="False"
 
-###############################################################################
-# Individual Model Forecasts
-###############################################################################
+# individual model forecasts
 
 if [[ "${INDIVIDUAL_MODEL_FORECAST}" == "True" ]]; then
 
@@ -183,9 +173,7 @@ if [[ "${INDIVIDUAL_MODEL_FORECAST}" == "True" ]]; then
 
 else
 
-###############################################################################
-# Multi-model Ensemble Forecast
-###############################################################################
+# multi-model ensemble forecast
 
     if [[ ${#MODELS[@]} -eq 0 ]]; then
         echo "No models specified."
