@@ -120,9 +120,6 @@ START_YEAR=1993
 END_YEAR=2016
 
 DOWNLOAD_HINDCAST="False"
-
-# True  -> Individual model forecasts
-# False -> Multi-model ensemble forecast
 INDIVIDUAL_MODEL_FORECAST="False"
 
 ###############################################################################
@@ -131,9 +128,9 @@ INDIVIDUAL_MODEL_FORECAST="False"
 
 if [[ "${INDIVIDUAL_MODEL_FORECAST}" == "True" ]]; then
 
-    conda activate gcm_preprocessor_env
-
     for MODEL in "${MODELS[@]}"; do
+
+        conda activate gcm_preprocessor_env
 
         if [[ "${DOWNLOAD_HINDCAST}" == "True" ]]; then
             python gcm_preprocessor/scripts/main_download_c3s_nmme_hindcast.py \
@@ -181,8 +178,6 @@ if [[ "${INDIVIDUAL_MODEL_FORECAST}" == "True" ]]; then
             --init_month "${INIT_MONTH}" \
             --init_year "${INIT_YEAR}" \
             --models "${MODEL}"
-
-        conda activate gcm_preprocessor_env
 
     done
 
