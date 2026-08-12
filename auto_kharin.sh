@@ -17,64 +17,6 @@
 #      - All selected models are preprocessed together and subsequently passed
 #        to the calibration workflow as a single multi-model ensemble.
 #
-# User Configuration
-# ------------------
-# MODELS
-#     List of forecasting models to process.
-#
-# INIT_MONTH
-#     Forecast initialization month.
-#
-# INIT_YEAR
-#     Forecast initialization year.
-#
-# SEASON_LENGTH
-#     Number of months comprising the target season.
-#
-# LEAD_TIME
-#     Forecast lead time.
-#
-# START_YEAR
-# END_YEAR
-#     Common hindcast period used during calibration.
-#
-# DOWNLOAD_HINDCAST
-#     "True"  -> Download hindcast data.
-#     "False" -> Use existing hindcast datasets.
-#
-# INDIVIDUAL_MODEL_FORECAST
-#     "True"  -> Produce calibrated forecasts for each model separately.
-#     "False" -> Produce one calibrated multi-model ensemble forecast.
-#
-# Requirements
-# ------------
-# Directory structure
-#
-#   working_directory/
-#   ├── auto_kharin.sh
-#   ├── gcm_preprocessor/
-#   └── gcm_calibration/
-#
-# Conda environments
-#
-#   gcm_preprocessor_env
-#   gcm_calibration_env
-#
-# Usage
-# -----
-# 1. Modify the configuration variables below.
-#
-# 2. Run
-#
-#       bash auto_kharin.sh or ./auto_kharin.sh
-#
-# Notes
-# -----
-# • Individual-model mode processes one model at a time.
-# • Ensemble mode processes all selected models together and passes a single
-#   underscore-separated model string to the calibration workflow.
-# • Hindcast downloading is optional and normally required only once.
-#
 # Developed: @ICPAC
 ###############################################################################
 
