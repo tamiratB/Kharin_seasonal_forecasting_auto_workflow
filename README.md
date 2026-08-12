@@ -1,18 +1,24 @@
 # Automated Kharin Seasonal Forecasting Workflow
 
-This repository provides an automated workflow for the **Kharin Seasonal Forecasting Tool**. It streamlines the complete seasonal forecast production process by automating:
+This repository provides an automated workflow for the **Kharin Seasonal Forecasting Tool**, simplifying the complete seasonal forecast production process from data acquisition to calibrated forecast generation.
 
-- Hindcast and forecast data download
-- Seasonal aggregation
+The workflow automates:
+
+- Download of C3S/NMME hindcast and forecast data
+- Seasonal aggregation of monthly forecasts
 - Lead-time dataset preparation
-- Calibration
-- Forecast generation
+- Model calibration
+- Calibrated forecast generation
+- Individual model or multi-model ensemble forecasting
 
-The workflow is designed to reduce manual intervention and improve the reproducibility and operational efficiency of seasonal forecast production.
+The objective is to minimize manual intervention, improve reproducibility, and increase the efficiency of operational seasonal forecast production.
 
 > **Note**
 >
-> This repository **does not replace** the original Kharin forecasting tool. It provides modified scripts and an automation wrapper around the original workflow.
+> This repository **does not replace** the original Kharin forecasting tool. Instead, it provides:
+>
+> - Modified preprocessing and calibration scripts
+> - An automation wrapper (`auto_kharin.sh`) for running the complete workflow
 >
 > The original Kharin forecasting tool is available at:
 >
@@ -40,22 +46,25 @@ The workflow is designed to reduce manual intervention and improve the reproduci
 
 # Prerequisites
 
-Before using this workflow, make sure you have:
+Before using this workflow, ensure that you have:
 
 - The original **gcm_preprocessor** repository.
 - The original **gcm_calibration** repository.
 - Conda environments:
-  - `gcm_preprocessor_env`
-  - `gcm_calibration_env`
 
-The expected directory structure is:
+```
+gcm_preprocessor_env
+gcm_calibration_env
+```
+
+The recommended directory structure is
 
 ```
 working_directory/
 │
 ├── auto_kharin.sh
 ├── gcm_preprocessor/
-├── gcm_calibration/
+└── gcm_calibration/
 ```
 
 ---
@@ -64,11 +73,7 @@ working_directory/
 
 ## Step 1. Replace the modified scripts
 
-This repository contains updated versions of several scripts used by the original workflow.
-
-### Copy the preprocessing scripts
-
-Copy all scripts from
+Copy the modified preprocessing scripts
 
 ```
 preprocessor_scripts/
@@ -80,13 +85,9 @@ into
 gcm_preprocessor/scripts/
 ```
 
-replacing the original files.
+replacing the existing scripts.
 
----
-
-### Copy the calibration scripts
-
-Copy all scripts from
+Next, copy the modified calibration scripts
 
 ```
 calibration_scripts/
@@ -98,7 +99,7 @@ into
 gcm_calibration/scripts/
 ```
 
-replacing the original files.
+again replacing the existing scripts.
 
 ---
 
@@ -110,7 +111,9 @@ Copy
 auto_kharin.sh
 ```
 
-into the directory that contains both repositories:
+into the parent directory containing both repositories.
+
+The final directory structure should look like
 
 ```
 working_directory/
@@ -130,30 +133,34 @@ Open
 auto_kharin.sh
 ```
 
-and modify the user configuration section.
+and modify the **User Configuration** section.
 
 Example:
 
 ```bash
 MODELS=(
-    "DWD-GCFS2p2"
-    "ECMWF-SEAS51"
+    "ECMWF-SEAS51_iri2"
+    "NCEP-CFSv2"
     "GFDL-SPEAR"
 )
 
-INIT_MONTH="May"
+INIT_MONTH="Aug"
 INIT_YEAR="2026"
 
-SEASON_LENGTH=4
-LEAD_TIME=1
+SEASON_LENGTH=3
+LEAD_TIME=2
 
 START_YEAR=1993
 END_YEAR=2016
 
 DOWNLOAD_HINDCAST="False"
+
+INDIVIDUAL_MODEL_FORECAST="False"
 ```
 
-### Configuration Parameters
+---
+
+## Configuration Parameters
 
 | Variable | Description |
 |-----------|-------------|
@@ -164,7 +171,46 @@ DOWNLOAD_HINDCAST="False"
 | `LEAD_TIME` | Forecast lead time |
 | `START_YEAR` | First hindcast year |
 | `END_YEAR` | Last hindcast year |
-| `DOWNLOAD_HINDCAST` | Set to `"True"` to download hindcasts; otherwise previously downloaded data will be used |
+| `DOWNLOAD_HINDCAST` | Set to `"True"` to download hindcasts. Set to `"False"` to use existing datasets. |
+| `INDIVIDUAL_MODEL_FORECAST` | `"True"` processes each model independently. `"False"` produces a calibrated multi-model ensemble forecast. |
+
+---
+
+# Forecast Modes
+
+The workflow supports two execution modes.
+
+## 1. Individual Model Forecast
+
+Set
+
+```bash
+INDIVIDUAL_MODEL_FORECAST="True"
+```
+
+Each model is processed independently through the entire workflow:
+
+- Download
+- Seasonal aggregation
+- Lead file creation
+- Calibration
+- Forecast generation
+
+This mode is useful for evaluating or generating calibrated forecasts for individual models.
+
+---
+
+## 2. Multi-model Ensemble Forecast (Recommended)
+
+Set
+
+```bash
+INDIVIDUAL_MODEL_FORECAST="False"
+```
+
+The workflow processes all selected models together and generates a calibrated multi-model ensemble forecast.
+
+Internally, the selected model names are combined into a single underscore-separated string before being passed to the calibration workflow.
 
 ---
 
@@ -176,45 +222,83 @@ Execute
 bash auto_kharin.sh
 ```
 
-The workflow automatically performs the following steps:
+The workflow automatically performs the following steps.
 
 1. Activate the preprocessing environment.
 2. Download hindcasts (optional).
-3. Download forecasts.
-4. Create seasonal hindcast datasets.
-5. Create seasonal forecast datasets.
-6. Generate lead-specific hindcast files.
-7. Generate lead-specific forecast files.
+3. Download forecast data.
+4. Generate seasonal hindcast datasets.
+5. Generate seasonal forecast datasets.
+6. Create lead-specific hindcast datasets.
+7. Create lead-specific forecast datasets.
 8. Activate the calibration environment.
 9. Run calibration.
-10. Produce calibrated seasonal forecasts.
+10. Generate calibrated seasonal forecasts.
 
-You will find forecasts in `gcm_calibration/data/calibrated_forecasts_for_ICPAC`.
+---
+
+# Output
+
+The calibrated forecasts are written to
+
+```
+gcm_calibration/data/calibrated_forecasts_for_ICPAC/
+```
+
+---
+
+# Log Files
+
+The workflow generates log files throughout preprocessing and calibration.
+
+If one or more models are missing from the final forecasts, inspect the log files for errors or warnings.
+
+Logs are located in
+
+```
+gcm_preprocessor/logs/
+```
+
+and
+
+```
+gcm_calibration/logs/
+```
+
+These logs can help identify issues such as
+
+- failed data downloads
+- unavailable model data
+- preprocessing failures
+- calibration errors
+- forecast generation failures
 
 ---
 
 # Notes
 
-- The workflow assumes the directory structure described above. If your installation differs, update the paths in `auto_kharin.sh` accordingly.
-
-- Check the log files in the respective folders for any errors or warnings. If a model was not processed, determine whether it was due to a failed data download or any other issue. The log files are located in the `logs` directories of both `gcm_preprocessor` and `gcm_calibration`.
-
-- Hindcast downloading is optional. Once the hindcast datasets have been downloaded, set
+- Hindcast downloading is usually required only once. After the hindcasts have been downloaded successfully, set
 
 ```bash
 DOWNLOAD_HINDCAST="False"
 ```
 
-to skip this step in future runs.
+to skip downloading in future runs.
+
+- The workflow assumes the directory structure described above. If your installation differs, update the paths in `auto_kharin.sh` accordingly.
+
+- Individual model mode is primarily intended for model evaluation and diagnostics.
+
+- Multi-model ensemble mode is recommended for operational seasonal forecasting.
 
 ---
 
 # Citation
 
-If you use this workflow in your operational forecasting or research, please cite the original Kharin forecasting framework in addition to this repository.
+If you use this workflow in operational forecasting or research, please cite the original Kharin forecasting framework in addition to this repository.
 
 ---
 
-# Prepared
+# Prepared By:
 
 IGAD Climate Prediction and Applications Centre (ICPAC)

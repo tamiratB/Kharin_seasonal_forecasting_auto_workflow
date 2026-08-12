@@ -5,54 +5,90 @@
 #
 # Description
 # -----------
-# This script orchestrates the complete workflow for producing seasonal
-# forecasts using the Kharin calibration framework. It automates data
-# acquisition, preprocessing, seasonal aggregation, lead-time preparation,
-# calibration, and forecast generation with minimal user intervention.
+# This script automates the complete seasonal forecasting workflow using the
+# Kharin calibration framework. Depending on the configuration, it can produce
+# either:
+#
+#   1. Individual model forecasts
+#      - Each model is processed independently from data download through
+#        calibration and forecast generation.
+#
+#   2. Multi-model (ensemble) forecast
+#      - All selected models are preprocessed together and subsequently passed
+#        to the calibration workflow as a single multi-model ensemble.
 #
 # Workflow
 # --------
-# 1. Activate the gcm_preprocessor environment.
-# 2. Download hindcast data from C3S/NMME. You can turn ON/OFF this option
-# 3. Download the latest seasonal forecast.
-# 4. Aggregate monthly hindcasts into seasonal means.
-# 5. Aggregate monthly forecasts into seasonal means.
-# 6. Create lead-specific hindcast datasets.
-# 7. Create lead-specific forecast datasets.
-# 8. Activate the gcm_calibration environment.
-# 9. Run calibration for the selected models.
-# 10. Generate calibrated seasonal forecasts.
+# 1. Activate the preprocessing environment.
+# 2. (Optional) Download hindcast data.
+# 3. Download the requested forecast.
+# 4. Aggregate monthly data into seasonal means.
+# 5. Create lead-specific hindcast and forecast datasets.
+# 6. Activate the calibration environment.
+# 7. Run calibration.
+# 8. Generate calibrated seasonal forecasts.
 #
 # User Configuration
 # ------------------
-# models             List of forecasting models to process.
-# init_month         Forecast initialization month (e.g., Jan, Feb, ..., Dec).
-# init_year          Forecast initialization year.
-# season_length      Number of months in the target season.
-# lead_time          Forecast lead time (1 = first target season, etc.).
-# start_year         First hindcast year used for calibration.
-# end_year           Last hindcast year used for calibration.
-# download_hindcast  Set to "True" to download hindcasts, or "False" to use
-#                    previously downloaded datasets.
+# MODELS
+#     List of forecasting models to process.
+#
+# INIT_MONTH
+#     Forecast initialization month.
+#
+# INIT_YEAR
+#     Forecast initialization year.
+#
+# SEASON_LENGTH
+#     Number of months comprising the target season.
+#
+# LEAD_TIME
+#     Forecast lead time.
+#
+# START_YEAR
+# END_YEAR
+#     Common hindcast period used during calibration.
+#
+# DOWNLOAD_HINDCAST
+#     "True"  -> Download hindcast data.
+#     "False" -> Use existing hindcast datasets.
+#
+# INDIVIDUAL_MODEL_FORECAST
+#     "True"  -> Produce calibrated forecasts for each model separately.
+#     "False" -> Produce one calibrated multi-model ensemble forecast.
 #
 # Requirements
 # ------------
-# - Conda environments:
-#     * gcm_preprocessor_env
-#     * gcm_calibration_env
-# - The gcm_preprocessor and gcm_calibration repositories must be available
-#   under the working directory.
-#   Check - https://gitlab.com/climate-prediction-public/gcm_preprocessor_ICPAC
+# Directory structure
+#
+#   working_directory/
+#   ├── auto_kharin.sh
+#   ├── gcm_preprocessor/
+#   └── gcm_calibration/
+#
+# Conda environments
+#
+#   gcm_preprocessor_env
+#   gcm_calibration_env
 #
 # Usage
 # -----
-# Modify the configuration variables below and execute:
+# 1. Modify the configuration variables below.
 #
-#     bash auto_kharin.sh or ./auto_kharin.sh
+# 2. Run
 #
-# Developed : @ICPAC
-# Date   : August 2026
+#       bash auto_kharin.sh
+#
+# Notes
+# -----
+# • Individual-model mode processes one model at a time.
+# • Ensemble mode processes all selected models together and passes a single
+#   underscore-separated model string to the calibration workflow.
+# • Hindcast downloading is optional and normally required only once.
+#
+# Developed: @ICPAC
 ###############################################################################
+
 set -euo pipefail
 
 ###############################################################################
@@ -68,93 +104,168 @@ source /home/btamirat/miniforge3/etc/profile.d/conda.sh
 ###############################################################################
 # User Configuration
 ###############################################################################
-# one model per line and no need for comma in between
+
 MODELS=(
     "CMCC-SPSv4"
     "COLA-RSMAS-CCSM4"
     "COLA-RSMAS-CESM1"
     "CanSIPS-IC4.CanESM5"
     "CanSIPS-IC4.GEM5p2-NEMO"
-    #"DWD-GCFS2p2"
+    "DWD-GCFS2p2"
     "ECMWF-SEAS51_iri2"
-    #"GFDL-SPEAR"
-    #"JMA-CPS3"
-    #"Meteo_France-System9"
+    "GFDL-SPEAR"
+    "JMA-CPS3"
+    "Meteo_France-System9"
     "NASA-GEOSS2S"
     "NCEP-CFSv2"
-    #"UKMO-GloSea6-GC2-System604"
+    "UKMO-GloSea6-GC2-System604"
 )
 
-INIT_MONTH="May"
+INIT_MONTH="Aug"
 INIT_YEAR="2026"
 
-SEASON_LENGTH=4
-LEAD_TIME=1
+SEASON_LENGTH=3
+LEAD_TIME=2
 
-# Common hindcast period for all models
 START_YEAR=1993
 END_YEAR=2016
 
-# Set to "True" to download hindcasts
 DOWNLOAD_HINDCAST="False"
 
+# True  -> Individual model forecasts
+# False -> Multi-model ensemble forecast
+INDIVIDUAL_MODEL_FORECAST="False"
+
 ###############################################################################
-# Data Download and Preprocessing
+# Individual Model Forecasts
 ###############################################################################
 
-conda activate gcm_preprocessor_env
+if [[ "${INDIVIDUAL_MODEL_FORECAST}" == "True" ]]; then
 
-if [[ "${DOWNLOAD_HINDCAST}" == "True" ]]; then
-    python gcm_preprocessor/scripts/main_download_c3s_nmme_hindcast.py \
-        --models "${MODELS[@]}"
+    conda activate gcm_preprocessor_env
+
+    for MODEL in "${MODELS[@]}"; do
+
+        echo "============================================================"
+        echo "Processing ${MODEL}"
+        echo "============================================================"
+
+        if [[ "${DOWNLOAD_HINDCAST}" == "True" ]]; then
+            python gcm_preprocessor/scripts/main_download_c3s_nmme_hindcast.py \
+                --models "${MODEL}"
+        fi
+
+        python gcm_preprocessor/scripts/main_download_c3s_nmme_forecast.py \
+            --models "${MODEL}" \
+            --init_month "${INIT_MONTH}" \
+            --init_year "${INIT_YEAR}"
+
+        python gcm_preprocessor/scripts/main_make_seasons_from_monthly_hindcast.py \
+            --models "${MODEL}" \
+            --season_length "${SEASON_LENGTH}"
+
+        python gcm_preprocessor/scripts/main_make_seasons_from_monthly_forecast.py \
+            --season_length "${SEASON_LENGTH}"
+
+        python gcm_preprocessor/scripts/main_create_lead_files_for_hindcast.py \
+            --models "${MODEL}" \
+            --season_length "${SEASON_LENGTH}" \
+            --start_year "${START_YEAR}" \
+            --end_year "${END_YEAR}"
+
+        python gcm_preprocessor/scripts/main_create_lead_files_for_forecast.py \
+            --models "${MODEL}" \
+            --season_length "${SEASON_LENGTH}" \
+            --init_month "${INIT_MONTH}" \
+            --init_year "${INIT_YEAR}"
+
+        conda activate gcm_calibration_env
+
+        bash gcm_calibration/scripts/run_calibration.sh \
+            --season_length "${SEASON_LENGTH}" \
+            --lead_time "${LEAD_TIME}" \
+            --start_year "${START_YEAR}" \
+            --end_year "${END_YEAR}" \
+            --models "${MODEL}"
+
+        bash gcm_calibration/scripts/run_forecast.sh \
+            --season_length "${SEASON_LENGTH}" \
+            --lead_time "${LEAD_TIME}" \
+            --start_year "${START_YEAR}" \
+            --end_year "${END_YEAR}" \
+            --init_month "${INIT_MONTH}" \
+            --init_year "${INIT_YEAR}" \
+            --models "${MODEL}"
+
+        conda activate gcm_preprocessor_env
+
+    done
+
+###############################################################################
+# Multi-model Ensemble Forecast
+###############################################################################
+
+else
+
+    if [[ ${#MODELS[@]} -eq 0 ]]; then
+        echo "No models specified."
+        exit 1
+    fi
+
+    conda activate gcm_preprocessor_env
+
+    JOINED_MODELS=$(IFS=_; echo "${MODELS[*]}")
+
+    if [[ "${DOWNLOAD_HINDCAST}" == "True" ]]; then
+        python gcm_preprocessor/scripts/main_download_c3s_nmme_hindcast.py \
+            --models "${MODELS[@]}"
+    fi
+
+    python gcm_preprocessor/scripts/main_download_c3s_nmme_forecast.py \
+        --models "${MODELS[@]}" \
+        --init_month "${INIT_MONTH}" \
+        --init_year "${INIT_YEAR}"
+
+    python gcm_preprocessor/scripts/main_make_seasons_from_monthly_hindcast.py \
+        --models "${MODELS[@]}" \
+        --season_length "${SEASON_LENGTH}"
+
+    python gcm_preprocessor/scripts/main_make_seasons_from_monthly_forecast.py \
+        --season_length "${SEASON_LENGTH}"
+
+    python gcm_preprocessor/scripts/main_create_lead_files_for_hindcast.py \
+        --models "${MODELS[@]}" \
+        --season_length "${SEASON_LENGTH}" \
+        --start_year "${START_YEAR}" \
+        --end_year "${END_YEAR}"
+
+    python gcm_preprocessor/scripts/main_create_lead_files_for_forecast.py \
+        --models "${MODELS[@]}" \
+        --season_length "${SEASON_LENGTH}" \
+        --init_month "${INIT_MONTH}" \
+        --init_year "${INIT_YEAR}"
+
+    conda activate gcm_calibration_env
+
+    bash gcm_calibration/scripts/run_calibration.sh \
+        --season_length "${SEASON_LENGTH}" \
+        --lead_time "${LEAD_TIME}" \
+        --start_year "${START_YEAR}" \
+        --end_year "${END_YEAR}" \
+        --models "${JOINED_MODELS}"
+
+    bash gcm_calibration/scripts/run_forecast.sh \
+        --season_length "${SEASON_LENGTH}" \
+        --lead_time "${LEAD_TIME}" \
+        --start_year "${START_YEAR}" \
+        --end_year "${END_YEAR}" \
+        --init_month "${INIT_MONTH}" \
+        --init_year "${INIT_YEAR}" \
+        --models "${JOINED_MODELS}"
+
 fi
 
-python gcm_preprocessor/scripts/main_download_c3s_nmme_forecast.py \
-    --models "${MODELS[@]}" \
-    --init_month "${INIT_MONTH}" \
-    --init_year "${INIT_YEAR}"
-
-python gcm_preprocessor/scripts/main_make_seasons_from_monthly_hindcast.py \
-    --models "${MODELS[@]}" \
-    --season_length "${SEASON_LENGTH}"
-
-python gcm_preprocessor/scripts/main_make_seasons_from_monthly_forecast.py \
-    --season_length "${SEASON_LENGTH}"
-
-python gcm_preprocessor/scripts/main_create_lead_files_for_hindcast.py \
-    --models "${MODELS[@]}" \
-    --season_length "${SEASON_LENGTH}" \
-    --start_year "${START_YEAR}" \
-    --end_year "${END_YEAR}"
-
-python gcm_preprocessor/scripts/main_create_lead_files_for_forecast.py \
-    --models "${MODELS[@]}" \
-    --season_length "${SEASON_LENGTH}" \
-    --init_month "${INIT_MONTH}" \
-    --init_year "${INIT_YEAR}"
-
-###############################################################################
-# Calibration and Forecast Generation
-###############################################################################
-
-conda activate gcm_calibration_env
-
-bash gcm_calibration/scripts/run_calibration.sh \
-    --season_length "${SEASON_LENGTH}" \
-    --lead_time "${LEAD_TIME}" \
-    --start_year "${START_YEAR}" \
-    --end_year "${END_YEAR}" \
-    --models "${MODELS[@]}"
-
-bash gcm_calibration/scripts/run_forecast.sh \
-    --season_length "${SEASON_LENGTH}" \
-    --lead_time "${LEAD_TIME}" \
-    --start_year "${START_YEAR}" \
-    --end_year "${END_YEAR}" \
-    --init_month "${INIT_MONTH}" \
-    --init_year "${INIT_YEAR}" \
-    --models "${MODELS[@]}"
-
-echo "======================================================"
+echo
+echo "============================================================"
 echo "Seasonal forecasting workflow completed successfully."
-echo "======================================================"
+echo "============================================================"
