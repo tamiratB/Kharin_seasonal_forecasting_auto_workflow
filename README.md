@@ -210,8 +210,6 @@ INDIVIDUAL_MODEL_FORECAST="False"
 
 The workflow processes all selected models together and generates a calibrated multi-model ensemble forecast.
 
-Internally, the selected model names are combined into a single underscore-separated string before being passed to the calibration workflow.
-
 ---
 
 # Running the Workflow
@@ -259,19 +257,11 @@ Logs are located in
 gcm_preprocessor/logs/
 ```
 
-and
-
-```
-gcm_calibration/logs/
-```
-
 These logs can help identify issues such as
 
 - failed data downloads
 - unavailable model data
 - preprocessing failures
-- calibration errors
-- forecast generation failures
 
 ---
 

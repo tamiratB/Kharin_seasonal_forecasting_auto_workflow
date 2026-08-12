@@ -17,17 +17,6 @@
 #      - All selected models are preprocessed together and subsequently passed
 #        to the calibration workflow as a single multi-model ensemble.
 #
-# Workflow
-# --------
-# 1. Activate the preprocessing environment.
-# 2. (Optional) Download hindcast data.
-# 3. Download the requested forecast.
-# 4. Aggregate monthly data into seasonal means.
-# 5. Create lead-specific hindcast and forecast datasets.
-# 6. Activate the calibration environment.
-# 7. Run calibration.
-# 8. Generate calibrated seasonal forecasts.
-#
 # User Configuration
 # ------------------
 # MODELS
@@ -77,7 +66,7 @@
 #
 # 2. Run
 #
-#       bash auto_kharin.sh
+#       bash auto_kharin.sh or ./auto_kharin.sh
 #
 # Notes
 # -----
@@ -145,10 +134,6 @@ if [[ "${INDIVIDUAL_MODEL_FORECAST}" == "True" ]]; then
     conda activate gcm_preprocessor_env
 
     for MODEL in "${MODELS[@]}"; do
-
-        echo "============================================================"
-        echo "Processing ${MODEL}"
-        echo "============================================================"
 
         if [[ "${DOWNLOAD_HINDCAST}" == "True" ]]; then
             python gcm_preprocessor/scripts/main_download_c3s_nmme_hindcast.py \
