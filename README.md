@@ -291,4 +291,20 @@ If you use this workflow in operational forecasting or research, please cite the
 
 # Prepared By:
 
-IGAD Climate Prediction and Applications Centre (ICPAC)
+IGAD Climate Prediction and Applications Centre (ICPAC).
+
+---
+
+# Contact
+
+For questions, bug reports, or contributions, please open an issue on the project's repository.
+
+---
+
+# Use at your own responsibility
+
+The software and any forecasts, maps, or other outputs it produces are provided
+**"as is"** and are used **entirely at the user's own risk and responsibility**.
+ICPAC makes no warranty as to the accuracy, reliability, or fitness of the
+software or its outputs for any purpose and **accepts no responsibility or
+liability** for any loss or damage arising from their use.
