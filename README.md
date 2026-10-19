@@ -267,7 +267,7 @@ These logs can help identify issues such as
 
 # Notes
 
-- Hindcast downloading is usually required only once. After the hindcasts have been downloaded successfully, set
+- Hindcast downloading is usually required only once unless it required to do so for a new changes. After the hindcasts have been downloaded successfully, set
 
 ```bash
 DOWNLOAD_HINDCAST="False"
