@@ -208,7 +208,7 @@ Set
 INDIVIDUAL_MODEL_FORECAST="False"
 ```
 
-The workflow processes all selected models together and generates a calibrated multi-model ensemble forecast.
+If the forecasts are downloaded from the previous step, make it "True"; otherwise. The workflow processes all selected models together and generates a calibrated multi-model ensemble forecast.
 
 ---
 
